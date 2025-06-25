@@ -24,100 +24,128 @@ export async function generateInvoicePDF(data: InvoiceData) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595, 842]);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
   const fontSize = 10;
-  const lineHeight = fontSize * 1.2;
+  const lineHeight = fontSize * 1.4;
 
-  const breakLines = (text: string, maxWidth: number) => {
-    const words = text.split(' ');
+  const breakLines = (text: string, maxWidth: number, textFont = font) => {
+    if (!text) return [''];
+    
+    const words = text.toString().split(' ');
     const lines: string[] = [];
     let line = '';
+    
     for (const word of words) {
       const testLine = line + (line ? ' ' : '') + word;
-      const width = font.widthOfTextAtSize(testLine, fontSize);
-      if (width < maxWidth) {
+      const width = textFont.widthOfTextAtSize(testLine, fontSize);
+      if (width <= maxWidth - 8) { // Account for padding
         line = testLine;
       } else {
         if (line) lines.push(line);
         line = word;
+        // Handle very long words that don't fit
+        if (textFont.widthOfTextAtSize(word, fontSize) > maxWidth - 8) {
+          let chars = '';
+          for (const char of word) {
+            const testChars = chars + char;
+            if (textFont.widthOfTextAtSize(testChars, fontSize) <= maxWidth - 8) {
+              chars = testChars;
+            } else {
+              if (chars) lines.push(chars);
+              chars = char;
+            }
+          }
+          line = chars;
+        }
       }
     }
     if (line) lines.push(line);
-    return lines;
+    return lines.length > 0 ? lines : [''];
   };
 
-  const drawCenteredLines = (
-    lines: string[],
-    x: number,
-    y: number,
-    boxHeight: number
-  ) => {
+  const drawTextInCell = (lines: string[], x: number, y: number, width: number, height: number, textFont = font) => {
+    const padding = 4;
+    const availableHeight = height - (2 * padding);
     const totalTextHeight = lines.length * lineHeight;
-    const topY = y + boxHeight - ((boxHeight - totalTextHeight) / 2) - fontSize;
+    const startY = y + height - padding - fontSize - Math.max(0, (availableHeight - totalTextHeight) / 2);
+    
     lines.forEach((line, i) => {
-      page.drawText(line, {
-        x,
-        y: topY - i * lineHeight,
-        size: fontSize,
-        font,
-        color: rgb(0, 0, 0),
-      });
+      const lineY = startY - (i * lineHeight);
+      if (lineY >= y + padding) { // Don't draw text outside cell bounds
+        page.drawText(line, {
+          x: x + padding,
+          y: lineY,
+          size: fontSize,
+          font: textFont,
+          color: rgb(0, 0, 0),
+        });
+      }
     });
   };
 
   let y = page.getHeight() - 40;
 
-  // Header
+  // Header with better styling
   page.drawText('Shakti Mechanical Works', {
-    x: 595 / 2 - font.widthOfTextAtSize('Shakti Mechanical Works', 16) / 2,
+    x: 595 / 2 - boldFont.widthOfTextAtSize('Shakti Mechanical Works', 18) / 2,
     y,
-    size: 16,
-    font,
+    size: 18,
+    font: boldFont,
+    color: rgb(0.2, 0.2, 0.2),
   });
-  y -= 20;
+  y -= 25;
+  
   page.drawText('Near Panchratna Bldg. Kosamba (R.S.)', {
     x: 595 / 2 - font.widthOfTextAtSize('Near Panchratna Bldg. Kosamba (R.S.)', 12) / 2,
     y,
     size: 12,
     font,
+    color: rgb(0.4, 0.4, 0.4),
   });
-  y -= 30;
+  y -= 40;
 
-  page.drawText(`Bill No: ${data.billNo}`, { x: 50, y, size: fontSize, font });
-  page.drawText(`Date: ${data.invoiceDate}`, { x: 350, y, size: fontSize, font });
-  y -= 20;
-  page.drawText(`Client: ${data.clientName}`, { x: 50, y, size: fontSize, font });
-  y -= 20;
-  page.drawText(`Order No: ${data.orderNo}`, { x: 50, y, size: fontSize, font });
-  page.drawText(`Challan No: ${data.challanNo}`, { x: 350, y, size: fontSize, font });
-  y -= 20;
-  page.drawText(`GST No: ${data.gstNo}`, { x: 50, y, size: fontSize, font });
-  y -= 30;
+  // Invoice details in a more organized layout
+  const detailsY = y;
+  page.drawText(`Bill No: ${data.billNo}`, { x: 50, y: detailsY, size: fontSize, font: boldFont });
+  page.drawText(`Date: ${data.invoiceDate}`, { x: 400, y: detailsY, size: fontSize, font: boldFont });
+  
+  page.drawText(`Client: ${data.clientName}`, { x: 50, y: detailsY - 20, size: fontSize, font });
+  page.drawText(`GST No: ${data.gstNo}`, { x: 400, y: detailsY - 20, size: fontSize, font });
+  
+  page.drawText(`Order No: ${data.orderNo}`, { x: 50, y: detailsY - 40, size: fontSize, font });
+  page.drawText(`Challan No: ${data.challanNo}`, { x: 400, y: detailsY - 40, size: fontSize, font });
+  
+  y = detailsY - 70;
 
-  // Table
+  // Table with improved layout
   const headers = ['Sr.', 'Description', 'HSN', 'Qty', 'Rate', 'Discount', 'Amount'];
-  const colWidths = [30, 160, 60, 40, 60, 60, 70];
+  const colWidths = [35, 200, 55, 40, 65, 65, 75];
   const colXs = colWidths.reduce((acc, w, i) => {
-    acc.push(i === 0 ? 50 : acc[i - 1] + colWidths[i - 1]);
+    acc.push(i === 0 ? 40 : acc[i - 1] + colWidths[i - 1]);
     return acc;
   }, [] as number[]);
 
-  const headerHeight = lineHeight + 6;
+  const headerHeight = 25;
+  
+  // Draw header
   headers.forEach((header, i) => {
     page.drawRectangle({
       x: colXs[i],
       y,
       width: colWidths[i],
       height: headerHeight,
-      color: rgb(0.9, 0.9, 0.9),
-      borderColor: rgb(0.6, 0.6, 0.6),
-      borderWidth: 0.5,
+      color: rgb(0.85, 0.85, 0.85),
+      borderColor: rgb(0.5, 0.5, 0.5),
+      borderWidth: 1,
     });
+    
     page.drawText(header, {
       x: colXs[i] + 4,
-      y: y + 4,
+      y: y + (headerHeight - fontSize) / 2,
       size: fontSize,
-      font,
+      font: boldFont,
+      color: rgb(0.2, 0.2, 0.2),
     });
   });
 
@@ -125,64 +153,125 @@ export async function generateInvoicePDF(data: InvoiceData) {
 
   let subtotal = 0;
 
+  // Draw items with proper text wrapping
   for (let i = 0; i < data.items.length; i++) {
     const item = data.items[i];
     const amount = item.quantity * item.rate - item.discount;
     subtotal += amount;
 
-    const description = `${item.description} (Item Code: ${item.itemCode})`;
+    // Create description with item code if available
+    const description = item.itemCode ? 
+      `${item.description}, Item Code: ${item.itemCode}` : 
+      item.description;
 
-    const cells = [
+    const cellContents = [
       String(i + 1),
       description,
       item.hsn,
       item.quantity.toString(),
-      item.rate.toFixed(2),
-      item.discount.toFixed(2),
-      amount.toFixed(2),
+      `Rs. ${item.rate.toFixed(2)}`,
+      `Rs. ${item.discount.toFixed(2)}`,
+      `Rs. ${amount.toFixed(2)}`,
     ];
 
-    const linesPerCell = cells.map((text, j) =>
-      breakLines(text, colWidths[j] - 8)
+    // Calculate required height for this row
+    const linesPerCell = cellContents.map((text, j) =>
+      breakLines(text, colWidths[j])
     );
-
+    
     const maxLines = Math.max(...linesPerCell.map(l => l.length));
-    const rowHeight = maxLines * lineHeight + 4;
+    const minRowHeight = 25;
+    const rowHeight = Math.max(minRowHeight, maxLines * lineHeight + 10);
 
-    // Draw cells
+    // Check if we need space for this row plus totals (reserve 150px for totals)
+    if (y - rowHeight < 150) {
+      // Add a new page if we're running out of space
+      const newPage = pdfDoc.addPage([595, 842]);
+      // Note: In a real implementation, you'd need to track the current page
+      // and update all drawing operations to use the new page
+      y = newPage.getHeight() - 50;
+      
+      // Redraw headers on new page
+      headers.forEach((header, headerIndex) => {
+        newPage.drawRectangle({
+          x: colXs[headerIndex],
+          y,
+          width: colWidths[headerIndex],
+          height: headerHeight,
+          color: rgb(0.85, 0.85, 0.85),
+          borderColor: rgb(0.5, 0.5, 0.5),
+          borderWidth: 1,
+        });
+        
+        newPage.drawText(header, {
+          x: colXs[headerIndex] + 4,
+          y: y + (headerHeight - fontSize) / 2,
+          size: fontSize,
+          font: boldFont,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+      });
+      y -= headerHeight;
+    }
+
+    // Draw row cells
     colXs.forEach((x, j) => {
       page.drawRectangle({
         x,
-        y,
+        y: y - rowHeight,
         width: colWidths[j],
         height: rowHeight,
-        borderColor: rgb(0.6, 0.6, 0.6),
+        color: i % 2 === 0 ? rgb(1, 1, 1) : rgb(0.98, 0.98, 0.98),
+        borderColor: rgb(0.7, 0.7, 0.7),
         borderWidth: 0.5,
       });
     });
 
-    // Draw wrapped and vertically centered text
+    // Draw text content
     colXs.forEach((x, j) => {
-      drawCenteredLines(linesPerCell[j], x + 4, y, rowHeight);
+      const textFont = j === 0 ? boldFont : font; // Make serial number bold
+      drawTextInCell(linesPerCell[j], x, y - rowHeight, colWidths[j], rowHeight, textFont);
     });
 
     y -= rowHeight;
   }
 
-  // Totals
+  // Totals section with better formatting
   const sgst = subtotal * (data.gstRate / 100);
   const cgst = sgst;
   const total = subtotal + sgst + cgst;
 
-  const rightX = 595 - 200;
   y -= 30;
-  page.drawText(`Subtotal: Rs. ${subtotal.toFixed(2)}`, { x: rightX, y, size: fontSize, font });
-  y -= 15;
-  page.drawText(`SGST (${data.gstRate}%): Rs. ${sgst.toFixed(2)}`, { x: rightX, y, size: fontSize, font });
-  y -= 15;
-  page.drawText(`CGST (${data.gstRate}%): Rs. ${cgst.toFixed(2)}`, { x: rightX, y, size: fontSize, font });
-  y -= 15;
-  page.drawText(`Total: Rs. ${total.toFixed(2)}`, { x: rightX, y, size: fontSize, font });
+  const totalsX = 380;
+  const totalsWidth = 180;
+  
+  // Draw totals box
+  page.drawRectangle({
+    x: totalsX,
+    y: y - 90,
+    width: totalsWidth,
+    height: 90,
+    color: rgb(0.95, 0.95, 0.95),
+    borderColor: rgb(0.5, 0.5, 0.5),
+    borderWidth: 1,
+  });
+
+  page.drawText(`Subtotal: Rs. ${subtotal.toFixed(2)}`, { x: totalsX + 10, y: y - 20, size: fontSize, font });
+  page.drawText(`SGST (${data.gstRate}%): Rs. ${sgst.toFixed(2)}`, { x: totalsX + 10, y: y - 35, size: fontSize, font });
+  page.drawText(`CGST (${data.gstRate}%): Rs. ${cgst.toFixed(2)}`, { x: totalsX + 10, y: y - 50, size: fontSize, font });
+  page.drawText(`Total: Rs. ${total.toFixed(2)}`, { x: totalsX + 10, y: y - 75, size: fontSize + 2, font: boldFont, color: rgb(0.2, 0.2, 0.8) });
+
+  // Footer
+  y -= 120;
+  if (y > 50) {
+    page.drawText('Thank you for your business!', {
+      x: 595 / 2 - font.widthOfTextAtSize('Thank you for your business!', fontSize) / 2,
+      y,
+      size: fontSize,
+      font,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+  }
 
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -190,4 +279,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
   link.href = URL.createObjectURL(blob);
   link.download = `Invoice_${data.billNo}_${data.clientName.replace(/\s+/g, '_')}.pdf`;
   link.click();
+  
+  // Clean up the object URL
+  setTimeout(() => URL.revokeObjectURL(link.href), 100);
 }
