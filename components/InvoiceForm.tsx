@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { generateInvoicePDF } from '../utils/pdfGenerator';
+import { generateInvoicePDF } from '../utils/enhanced_generateInvoicePDF';
 
 interface Item {
   description: string;

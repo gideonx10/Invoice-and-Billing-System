@@ -81,10 +81,10 @@ export async function generateInvoicePDF(data: InvoiceData) {
   };
 
   let y = 812;
-
+  // ॥ श्री ॥
   // Top Symbol
-  page.drawText('॥ श्री ॥', {
-    x: pageWidth / 2 - font.widthOfTextAtSize('॥ श्री ॥', 14) / 2,
+  page.drawText('Shree', {
+    x: pageWidth / 2 - font.widthOfTextAtSize('Shree', 14) / 2,
     y,
     size: 14,
     font: boldFont,
