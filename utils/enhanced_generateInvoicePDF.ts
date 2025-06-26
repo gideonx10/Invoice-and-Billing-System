@@ -106,7 +106,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
   });
 
   // Mobile Numbers
-  page.drawText('+91 98765XXXXX, +91 91234XXXXX', {
+  page.drawText('+91 98765XXXXX,', {
     x: pageWidth - 200,
     y,
     size: 10,

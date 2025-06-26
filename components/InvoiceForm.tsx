@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { generateInvoicePDF } from '../utils/enhanced_generateInvoicePDF';
+import { generateInvoicePDF } from '../utils/new_pdfGenerator';
 
 interface Item {
   description: string;
@@ -97,12 +97,12 @@ export default function InvoiceForm() {
         <div className="space-y-8">
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
               Invoice Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Bill No *</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">Bill No *</label>
                 <input
                   type="text"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -113,7 +113,7 @@ export default function InvoiceForm() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Client Name *</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">Client Name *</label>
                 <input
                   type="text"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -124,7 +124,7 @@ export default function InvoiceForm() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Date</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">Invoice Date</label>
                 <input
                   type="date"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -134,7 +134,7 @@ export default function InvoiceForm() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Order No</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">Order No</label>
                 <input
                   type="text"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -145,7 +145,7 @@ export default function InvoiceForm() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Challan No</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">Challan No</label>
                 <input
                   type="text"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -156,7 +156,7 @@ export default function InvoiceForm() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">GST No</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">GST No</label>
                 <input
                   type="text"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -186,12 +186,12 @@ export default function InvoiceForm() {
               {items.map((item, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex justify-between items-start mb-4">
-                    <span className="text-sm font-medium text-gray-700">Item #{index + 1}</span>
+                    <span className="text-base font-medium text-gray-700">Item #{index + 1}</span>
                     {items.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(index)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        className="text-red-600 hover:text-red-800 text-base font-medium"
                       >
                         Remove
                       </button>
@@ -200,7 +200,7 @@ export default function InvoiceForm() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
                     <div className="lg:col-span-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
                       <textarea
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Item description"
@@ -211,7 +211,7 @@ export default function InvoiceForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Item Code</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Item Code</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -222,7 +222,7 @@ export default function InvoiceForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">HSN</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">HSN</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -233,7 +233,7 @@ export default function InvoiceForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Quantity</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -246,7 +246,7 @@ export default function InvoiceForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Rate (₹)</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Rate (₹)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -259,7 +259,7 @@ export default function InvoiceForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Discount (₹)</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Discount (₹)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -273,8 +273,8 @@ export default function InvoiceForm() {
                   </div>
                   
                   <div className="mt-3 text-right">
-                    <span className="text-sm font-medium text-gray-700">
-                      Amount: <span className="text-lg font-semibold text-green-600">₹{calculateItemTotal(item).toFixed(2)}</span>
+                    <span className="text-xl font-medium text-gray-700">
+                      Amount: <span className="text-xl font-semibold text-green-600">₹{calculateItemTotal(item).toFixed(2)}</span>
                     </span>
                   </div>
                 </div>
@@ -286,43 +286,39 @@ export default function InvoiceForm() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* GST Settings */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">GST Settings</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">GST Settings</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">GST Rate</label>
+                <label className="block text-base font-medium text-gray-700 mb-2">GST Rate</label>
                 <select
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   value={gstRate}
                   onChange={(e) => setGstRate(parseInt(e.target.value))}
                 >
-                  <option value={5}>5%</option>
                   <option value={9}>9%</option>
-                  <option value={12}>12%</option>
                   <option value={14}>14%</option>
-                  <option value={18}>18%</option>
-                  <option value={28}>28%</option>
                 </select>
               </div>
             </div>
 
             {/* Invoice Summary */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Invoice Summary</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Invoice Summary</h3>
               <div className="space-y-3">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-base">
                   <span className="text-gray-600">Subtotal:</span>
                   <span className="font-medium">₹{calculateSubtotal().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-base">
                   <span className="text-gray-600">SGST ({gstRate}%):</span>
                   <span className="font-medium">₹{calculateTax().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-base">
                   <span className="text-gray-600">CGST ({gstRate}%):</span>
                   <span className="font-medium">₹{calculateTax().toFixed(2)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                    <span className="text-xl font-semibold text-gray-900">Total:</span>
                     <span className="text-xl font-bold text-green-600">₹{calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
